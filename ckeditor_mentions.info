@@ -1,0 +1,4 @@
+name = CKEditor Mentions
+description = CKEditor plugin for autocomplete user mentioning and inserting.
+package = User interface
+core = 7.x
