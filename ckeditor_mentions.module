@@ -28,7 +28,7 @@ function ckeditor_mentions_menu() {
 function ckeditor_mentions_ckeditor_plugin() {
   return array('ckeditor_mentions' => array(
     'name' => 'mentions',
-    'desc' => t('Plugin for autocomplete user mentioning and inserting'),
+    'desc' => t('Plugin for user mentioning and inserting'),
     'path' => drupal_get_path('module', 'ckeditor_mentions') .'/plugins/mentions/',
   ));
 }
