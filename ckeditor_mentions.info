@@ -2,3 +2,9 @@ name = CKEditor Mentions
 description = CKEditor plugin for autocomplete user mentioning and inserting.
 package = User interface
 core = 7.x
+
+scripts[] = js/ckeditor_mentions.js
+
+dependencies[] = realname
+dependencies[] = views
+

@@ -8,13 +8,6 @@ function ckeditor_mentions_preprocess_html() {
 }
 
 /**
- * Implements hook_init()
- */
-function ckeditor_mentions_init() {
-  drupal_add_js(drupal_get_path('module', 'ckeditor_mentions') .'/js/ckeditor_mentions.js');
-}
-
-/**
  * Implements hook_menu().
  */
 function ckeditor_mentions_menu() {

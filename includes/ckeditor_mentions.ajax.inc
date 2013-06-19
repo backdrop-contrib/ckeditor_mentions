@@ -9,7 +9,7 @@ function ckeditor_mentions_getpeople() {
 
   if (strlen($typed) <= 11 && $typed[0] == '@') {
 
-    $typed = substr($typed,1,strlen($typed));
+    $typed = substr($typed,1);
 
     //watchdog('ckeditor_mentions', 'typed = %typed', array('%typed' => $typed), WATCHDOG_DEBUG);
     
