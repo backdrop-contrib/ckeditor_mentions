@@ -1,5 +1,6 @@
-﻿ /**
+﻿/**
  * @file
+ * Most important JS logic is here.
  * Written by Albert Skibinski <albert@merge.nl>
  * http://www.merge.nl
  */

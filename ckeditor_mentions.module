@@ -1,4 +1,10 @@
 <?php
+
+/**
+ * @file
+ * Defining ajax callbacks, registering CKEditor plugin and including default views.
+ */
+
 /**
  * Implements hook_preprocess_html()
  */
@@ -29,7 +35,7 @@ function ckeditor_mentions_ckeditor_plugin() {
   return array('ckeditor_mentions' => array(
     'name' => 'mentions',
     'desc' => t('Plugin for user mentioning and inserting'),
-    'path' => drupal_get_path('module', 'ckeditor_mentions') .'/plugins/mentions/',
+    'path' => drupal_get_path('module', 'ckeditor_mentions') . '/plugins/mentions/',
   ));
 }
 

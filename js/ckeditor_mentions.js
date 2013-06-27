@@ -1,3 +1,8 @@
+/**
+ * @file
+ * Ajax return function, uses some jQuery to insert the view right after the editor.
+ */
+
 (function ($) {
 
   Drupal.ckeditor_mentions = {}

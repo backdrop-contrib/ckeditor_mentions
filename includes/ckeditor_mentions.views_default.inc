@@ -1,4 +1,10 @@
 <?php
+
+/**
+ * @file
+ * Default view used to display the users.
+ */
+
 /**
  * Implements hook_views_default_views().
  */
