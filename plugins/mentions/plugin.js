@@ -15,6 +15,8 @@
 				var start_observe_count = 3;
 				var observe = 0;
 				var typed = [];
+				var timeout_id;
+				var timout_delay = 1000;
 
 			  function mentions_stop_observing(typed) {
 					observe = 0;
@@ -22,8 +24,17 @@
 					$('.mention-suggestions').remove();
 				}
 
-				function mentions_getpeople(typed, editor) {
+				// just a wrapper for timout function to prevent unnecessary aajx callbacks
+				// when a user is fast typing
+				function mentions_timeout(typed, editor) {
+					if (timeout_id) {
+            //console.log('timer cancelled (id='+timeout_id+')');
+            clearTimeout(timeout_id);
+          }
+					timeout_id = setTimeout(function() { mentions_getpeople(typed, editor); }, timout_delay);	
+				}
 
+				function mentions_getpeople(typed, editor) {
 					// make a copy of the array instead of a reference
 					var clone = typed.slice(0);
 					str = clone.join('');
@@ -41,6 +52,9 @@
 			    };
 			    ajax = new Drupal.ajax(base, element, element_settings);
 			    ajax.eventResponse($(ajax.element));
+
+			    timeout_id = 0;
+			    //console.log('timer reset');
 			  }
 
 				function mentions_break_on(charcode) {
@@ -78,16 +92,18 @@
 						if (evt.data.$.which == 8) { // 8 == backspace
 							typed.pop();
 							// check if we still have enough characters...
-							if (typed.length >= start_observe_count) {							
-								mentions_getpeople(typed, editor);
-							} else {
-								// here, we stop observing alltogether, idealle we would want to:
-								// @TODO hide the suggestions but keep the typed array, unless the @ is also backspaced.
-								// so, when the count is above "start_observe_count" we would display suggestions again.
+							if (typed.length >= start_observe_count) {	
+								mentions_timeout(typed, editor);
+							}
+							if (typed.length < start_observe_count) {
+								$('.mention-suggestions').remove();
+							}
+							if (typed.length == 0) {			
 								mentions_stop_observing(typed);
 							}
+							//console.log(typed);
 						}
-						// things which shoudl trigger a stop observing, like Enter, home, etc.
+						// things which should trigger a stop observing, like Enter, home, etc.
 						if (mentions_break_on(evt.data.$.which)) {
 							mentions_stop_observing(typed);
 						}
@@ -104,7 +120,7 @@
 
 						var typed_char = String.fromCharCode(evt.data.$.which);
 						
-						//console.log(typed_char);
+						//console.log(typed);
 
 						if (typed_char == '@' || observe == 1) {
 
@@ -122,7 +138,7 @@
 							typed.push(typed_char);
 
 							if (typed.length >= start_observe_count) {							
-								mentions_getpeople(typed, editor);
+								mentions_timeout(typed, editor);
 							} 
 							
 							//console.log(typed);
@@ -130,9 +146,9 @@
 						}
 
 					});
-				}); // einde editor.on
+				}); // end editor.on
 
-			} // einde init functie
+			} // end init functie
 
 		});
 
