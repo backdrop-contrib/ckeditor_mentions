@@ -16,7 +16,7 @@
 				var observe = 0;
 				var typed = [];
 				var timeout_id;
-				var timout_delay = 1000;
+				var timout_delay = 500;
 
 			  function mentions_stop_observing(typed) {
 					observe = 0;
