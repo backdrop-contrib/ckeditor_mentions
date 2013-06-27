@@ -12,6 +12,7 @@
 
 			init: function(editor) {
 
+				var start_observe_count = 3;
 				var observe = 0;
 				var typed = [];
 
@@ -76,7 +77,15 @@
 						//console.log("e.which = " + evt.data.$.which);
 						if (evt.data.$.which == 8) { // 8 == backspace
 							typed.pop();
-							mentions_getpeople(typed, editor);
+							// check if we still have enough characters...
+							if (typed.length >= start_observe_count) {							
+								mentions_getpeople(typed, editor);
+							} else {
+								// here, we stop observing alltogether, idealle we would want to:
+								// @TODO hide the suggestions but keep the typed array, unless the @ is also backspaced.
+								// so, when the count is above "start_observe_count" we would display suggestions again.
+								mentions_stop_observing(typed);
+							}
 						}
 						// things which shoudl trigger a stop observing, like Enter, home, etc.
 						if (mentions_break_on(evt.data.$.which)) {
@@ -112,7 +121,7 @@
 
 							typed.push(typed_char);
 
-							if (typed.length >= 3) {							
+							if (typed.length >= start_observe_count) {							
 								mentions_getpeople(typed, editor);
 							} 
 							
