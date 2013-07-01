@@ -23,6 +23,7 @@ function ckeditor_mentions_menu() {
     'access arguments' => array('access user profiles'),
     'type' => MENU_CALLBACK,
     'delivery callback' => 'ajax_deliver',
+    'theme callback' => 'ajax_base_page_theme',
     'file' => 'includes/ckeditor_mentions.ajax.inc',
   );
   return $items;
