@@ -22,13 +22,12 @@ function ckeditor_mentions_menu() {
     'page callback' => 'ckeditor_mentions_getpeople',
     'access arguments' => array('access user profiles'),
     'type' => MENU_CALLBACK,
-    'delivery callback' => 'ajax_deliver',
-    'theme callback' => 'ajax_base_page_theme',
+    'delivery callback' => 'drupal_json_output',
     'file' => 'includes/ckeditor_mentions.ajax.inc',
   );
   return $items;
 }
- 
+
 /**
  * Implementation of hook_ckeditor_plugin().
  */
