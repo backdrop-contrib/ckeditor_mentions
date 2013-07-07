@@ -1,8 +1,8 @@
-﻿ /**
- * @file
- * Written by Albert Skibinski <albert@merge.nl>
- * http://www.merge.nl
- */
+﻿/**
+* @file
+* Written by Albert Skibinski <albert@merge.nl>
+* http://www.merge.nl
+*/
 
 ///////////////////////////////////////////////////////////////
 //      CKEDITOR_mentions helper class
@@ -19,8 +19,9 @@ function CKEDITOR_mentions (editor) {
   this.editor = editor;
   this.observe = 0;
   this.char_input = [];
+  this.timeout_id = null;
 
-  if ( CKEDITOR_mentions.caller != CKEDITOR_mentions.get_instance ) {
+  if (CKEDITOR_mentions.caller !== CKEDITOR_mentions.get_instance) {
       throw new Error("This object cannot be instanciated");
   }
 }
@@ -33,6 +34,22 @@ function CKEDITOR_mentions (editor) {
 CKEDITOR_mentions.instances = [];
 
 /*
+ * Delay of the timeout between the last key pressed and the ajax query. It's use to prevent ajax flooding when user types fast.
+ *
+ * @type Number
+ */
+
+CKEDITOR_mentions.timeout_delay = 500;
+
+/*
+ * Minimum number of characters needed to start searching for users (includes the @).
+ *
+ * @type Number
+ */
+
+CKEDITOR_mentions.start_observe_count = 3;
+
+/*
  * Method used to get an instance of CKEDITOR_mentions linked to an instance of CKEDITOR.
  * Its design is based on the singleton design pattern.
  *
@@ -43,7 +60,7 @@ CKEDITOR_mentions.get_instance = function (editor) {
   // we browse our collection of instances
   for (var i in this.instances) {
     // if we find an CKEDITOR instance in our collection
-    if (this.instances[i].id == editor.id) {
+    if (this.instances[i].id === editor.id) {
       // we return the instance of CKEDITOR_mentions that match
       return this.instances[i].instance;
     }
@@ -90,27 +107,43 @@ CKEDITOR_mentions.prototype.stop_observing = function () {
 /*
  * This methods send an ajax query to durpal ckeditor_mentions module and retrieve matching user.
  *
+ * @param {Object} selection result of CKEDITOR.editor.getSelection()
  * @returns {null}
  */
 CKEDITOR_mentions.prototype.get_people = function (selection) {
+  if (null !== this.timeout_id) {
+    clearTimeout(this.timeout_id);
+  }
+  
+  this.timeout_id = setTimeout(this.timeout_callback, CKEDITOR_mentions.timeout_delay, [this, selection]);
+}
+
+ /*
+ * This methods send an ajax query to durpal ckeditor_mentions module and retrieve matching user.
+ * 
+ * @param {Array} args An Array of parameters containing the current instance of CKEDITOR_mentions and selection (cf. CKEDITOR_mentions.prototype.get_people)
+ * @returns {null}
+ */
+CKEDITOR_mentions.prototype.timeout_callback = function (args) {
+  var mentions   = args[0];
+  var selection  = args[1];
+  var str        = mentions.char_input.join('');
+
   //if less than 3 char are input (including @) we don't try to get people
-
-  var str = this.char_input.join('');
-
-  if (str.length < 3) {
-    this.delete_tooltip();
+  if (str.length < CKEDITOR_mentions.start_observe_count) {
+    mentions.delete_tooltip();
     return;
   }
 
   var $ = jQuery;
 
-  var editor = this.editor,
-    element_id = editor.element.getId();
+  var editor       = mentions.editor;
+  var element_id   = editor.element.getId();
+  var range        = selection.getRanges()[0];
+  var startOffset  = range.startOffset - str.length;
+  var element      = range.startContainer.$;
 
-  var range = selection.getRanges()[0],
-    startOffset = range.startOffset - str.length + 1,
-    element = range.startContainer.$;
-
+  
   $.get(Drupal.settings.basePath + 'ckeditor/mentions', {typed: str}, function(rsp) {
 
     var ckel = $('#' + element_id);
@@ -151,8 +184,8 @@ CKEDITOR_mentions.prototype.get_people = function (selection) {
       range.moveToElementEditablePosition(el, link.parentNode.textContent.length);
       range.select();
     });
-
   });
+
 };
 
 /*
@@ -230,7 +263,7 @@ CKEDITOR_mentions.prototype.break_on = function (charcode) {
              * OR detect another @ while we are already observing
              * OR the length is longer than 11
              */
-            if ((mentions.char_input.length > 0 && typed_char === '@') || mentions.char_input.length > 11)  {
+            if ((mentions.char_input.length > 0 && typed_char === '@') || mentions.char_input.length > 11) {
               mentions.stop_observing();
             } else {
            		mentions.char_input.push(typed_char);
