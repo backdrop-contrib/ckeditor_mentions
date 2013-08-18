@@ -140,9 +140,8 @@ CKEDITOR_mentions.prototype.timeout_callback = function (args) {
   var editor       = mentions.editor;
   var element_id   = editor.element.getId();
   var range        = selection.getRanges()[0];
-  var startOffset  = range.startOffset - str.length;
+  var startOffset  = parseInt(range.startOffset - str.length) || 0;
   var element      = range.startContainer.$;
-
   
   $.get(Drupal.settings.basePath + 'ckeditor/mentions', {typed: str}, function(rsp) {
 
@@ -152,8 +151,8 @@ CKEDITOR_mentions.prototype.timeout_callback = function (args) {
     $('.mention-suggestions').remove();
 
     if (rsp) {
-    	$('<div class="mention-suggestions">' + rsp.html + '</div>').insertAfter(par);
-  	}
+      $('<div class="mention-suggestions">' + rsp.html + '</div>').insertAfter(par);
+    }
 
     $('.mention-users').click(function(e) {
       e.preventDefault();
@@ -170,19 +169,28 @@ CKEDITOR_mentions.prototype.timeout_callback = function (args) {
       link.textContent = '@' + $(this).data('realname');
 
       // Insert link after text node
+      // this is used when the link is inserted not at the end of the text
       if ( element.nextSibling ) {
         element.parentNode.insertBefore(link, element.nextSibling);
       }
+      // at the end of the editor text
       else {
         element.parentNode.appendChild(link);
       }
 
-      editor.focus();
-
-      var range = editor.createRange(),
+      if ( $.browser.msie ) {
+        // so basically, due to some weird behaviour by ckeditor IE triggers an error on focus,
+        // which in turn causes any additonal mentions to be inserted wrong.
+        // By turning this off, IE users will have to click manually on the editor to get back.
+        // https://drupal.org/node/2033739
+      } else {
+        editor.focus();
+        var range = editor.createRange(),
         el = new CKEDITOR.dom.element(link.parentNode);
-      range.moveToElementEditablePosition(el, link.parentNode.textContent.length);
-      range.select();
+        range.moveToElementEditablePosition(el, link.parentNode.textContent.length);
+        range.select();
+      }
+
     });
   });
 
@@ -232,7 +240,6 @@ CKEDITOR_mentions.prototype.break_on = function (charcode) {
          * which does not register on keypress... javascript is weird...
          */
         editable.attachListener(editable, 'keyup', function(evt) {
-          //console.log("e.which = " + evt.data.$.which);
           if (evt.data.$.which === 8) { // 8 == backspace
             mentions.char_input.pop();
             var selection = this.editor.getSelection();
@@ -247,12 +254,7 @@ CKEDITOR_mentions.prototype.break_on = function (charcode) {
         });
 
         editable.attachListener(editable, 'keypress', function(evt) {
-          /* btw: keyIdentifier is webkit only.
-           * console.log("keyIdentifier = " + evt.data.$.keyIdentifier);
-           * console.log("keyCode = " + evt.data.$.keyCode);
-           * console.log("e.which = " + evt.data.$.which);
-           * console.log("String.fromCharCode = " +String.fromCharCode(evt.data.$.which));
-           */
+          // btw: keyIdentifier is webkit only.
 
           var typed_char = String.fromCharCode(evt.data.$.which);
 
@@ -266,10 +268,10 @@ CKEDITOR_mentions.prototype.break_on = function (charcode) {
             if ((mentions.char_input.length > 0 && typed_char === '@') || mentions.char_input.length > 11) {
               mentions.stop_observing();
             } else {
-           		mentions.char_input.push(typed_char);
-            	var selection = this.editor.getSelection();
-            	mentions.get_people(selection);
-          	}
+              mentions.char_input.push(typed_char);
+              var selection = this.editor.getSelection();
+              mentions.get_people(selection);
+            }
           }
         });
       }); // end editor.on
