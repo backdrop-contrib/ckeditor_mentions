@@ -5,6 +5,36 @@
 */
 
 ///////////////////////////////////////////////////////////////
+// Polyfill for IE9 
+///////////////////////////////////////////////////////////////
+
+/*
+ * polyfill for IE9 to allow for multiple arguments in setTimeout
+ * http://stackoverflow.com/questions/12404528/ie-parameters-get-undefined-when-using-them-in-settimeout
+ */
+if (document.all && !window.setTimeout.isPolyfill) {
+  var __nativeST__ = window.setTimeout;
+  window.setTimeout = function (vCallback, nDelay /*, argumentToPass1, argumentToPass2, etc. */) {
+    var aArgs = Array.prototype.slice.call(arguments, 2);
+    return __nativeST__(vCallback instanceof Function ? function () {
+      vCallback.apply(null, aArgs);
+    } : vCallback, nDelay);
+  };
+  window.setTimeout.isPolyfill = true;
+}
+
+if (document.all && !window.setInterval.isPolyfill) {
+  var __nativeSI__ = window.setInterval;
+  window.setInterval = function (vCallback, nDelay /*, argumentToPass1, argumentToPass2, etc. */) {
+    var aArgs = Array.prototype.slice.call(arguments, 2);
+    return __nativeSI__(vCallback instanceof Function ? function () {
+      vCallback.apply(null, aArgs);
+    } : vCallback, nDelay);
+  };
+  window.setInterval.isPolyfill = true;
+}
+
+///////////////////////////////////////////////////////////////
 //      CKEDITOR_mentions helper class
 ///////////////////////////////////////////////////////////////
 
@@ -114,7 +144,6 @@ CKEDITOR_mentions.prototype.get_people = function (selection) {
   if (null !== this.timeout_id) {
     clearTimeout(this.timeout_id);
   }
-  
   this.timeout_id = setTimeout(this.timeout_callback, CKEDITOR_mentions.timeout_delay, [this, selection]);
 }
 
