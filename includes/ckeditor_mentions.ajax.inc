@@ -23,6 +23,7 @@ function ckeditor_mentions_getpeople() {
     if ($count > 0) {
       $html = $view->render();
       drupal_json_output(array('html' => $html));
+      drupal_exit();
     }
   }
 }
