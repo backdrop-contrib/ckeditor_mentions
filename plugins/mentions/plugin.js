@@ -173,20 +173,24 @@ CKEDITOR_mentions.prototype.timeout_callback = function (args) {
   var element      = range.startContainer.$;
   
   $.get(Drupal.settings.basePath + 'ckeditor/mentions', {typed: str}, function(rsp) {
-
     var ckel = $('#' + element_id);
     var par = ckel.parent();
 
     $('.mention-suggestions').remove();
 
     if (rsp) {
-      $('<div class="mention-suggestions">' + rsp.html + '</div>').insertAfter(par);
-    }
+    	$('<div class="mention-suggestions">' + rsp.html + '</div>').insertAfter(par);
+  	}
 
     $('.mention-users').click(function(e) {
       e.preventDefault();
 
-      var mentions = CKEDITOR_mentions.get_instance(editor);
+      selection     = editor.getSelection();
+      range         = selection.getRanges()[0];
+      startOffset   = parseInt(range.startOffset - str.length) || 0;
+      element       = range.startContainer.$;
+      mentions      = CKEDITOR_mentions.get_instance(editor);
+
       mentions.stop_observing();
 
       // Keep the text originally inserted after the new tag.
@@ -194,6 +198,8 @@ CKEDITOR_mentions.prototype.timeout_callback = function (args) {
 
       // Shorten text node
       element.textContent = element.textContent.substr(0, startOffset);
+
+      window.startOffset = startOffset;
 
       // Create link
       var link = document.createElement('a');
@@ -205,6 +211,7 @@ CKEDITOR_mentions.prototype.timeout_callback = function (args) {
       if ( element.nextSibling ) {
         element.parentNode.insertBefore(link, element.nextSibling);
       }
+
       // at the end of the editor text
       else {
         element.parentNode.appendChild(link);
@@ -215,19 +222,13 @@ CKEDITOR_mentions.prototype.timeout_callback = function (args) {
         element.parentNode.appendChild(document.createTextNode(after_text));
       }
 
-      if ( $.browser.msie ) {
-        // so basically, due to some weird behaviour by ckeditor IE triggers an error on focus,
-        // which in turn causes any additonal mentions to be inserted wrong.
-        // By turning this off, IE users will have to click manually on the editor to get back.
-        // https://drupal.org/node/2033739
-      } else {
-        editor.focus();
-        var range = editor.createRange(),
-        el = new CKEDITOR.dom.element(link.parentNode);
-        range.moveToElementEditablePosition(el, link.parentNode.textContent.length);
-        range.select();
-      }
-
+      $('.mention-suggestions').remove();
+      selection = editor.getSelection();
+      range = selection.getRanges()[0];
+      var el = new CKEDITOR.dom.element(link.parentNode);
+      range.moveToElementEditablePosition(el, link.parentNode.textContent.length);
+      editor.focus();
+      range.select();
     });
   });
 
@@ -255,7 +256,6 @@ CKEDITOR_mentions.prototype.break_on = function (charcode) {
   }
   return false;
 };
-
 
 ///////////////////////////////////////////////////////////////
 //      Plugin implementation
@@ -305,10 +305,10 @@ CKEDITOR_mentions.prototype.break_on = function (charcode) {
             if ((mentions.char_input.length > 0 && typed_char === '@') || mentions.char_input.length > 11) {
               mentions.stop_observing();
             } else {
-              mentions.char_input.push(typed_char);
-              var selection = this.editor.getSelection();
-              mentions.get_people(selection);
-            }
+           		mentions.char_input.push(typed_char);
+            	var selection = this.editor.getSelection();
+            	mentions.get_people(selection);
+          	}
           }
         });
       }); // end editor.on
