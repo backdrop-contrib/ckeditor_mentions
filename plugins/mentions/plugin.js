@@ -172,14 +172,15 @@ CKEDITOR_mentions.prototype.timeout_callback = function (args) {
   var startOffset  = parseInt(range.startOffset - str.length) || 0;
   var element      = range.startContainer.$;
   
-  $.get(Drupal.settings.basePath + 'ckeditor/mentions', {typed: str}, function(rsp) {
+  $.get(Backdrop.settings.basePath + 'ckeditor/mentions', {typed: str}, function(rsp) {
     var ckel = $('#' + element_id);
     var par = ckel.parent();
 
     $('.mention-suggestions').remove();
 
     if (rsp) {
-    	$('<div class="mention-suggestions">' + rsp.html + '</div>').insertAfter(par);
+      coords = getCoords(editor);
+    	$('<div class="mention-suggestions">' + rsp.html + '</div>').insertAfter(par).offset({ top: coords['y'], left: coords['x']});
   	}
 
     $('.mention-users').click(function(e) {
@@ -193,6 +194,7 @@ CKEDITOR_mentions.prototype.timeout_callback = function (args) {
 
       mentions.stop_observing();
 
+      console.log($(this));
       // Keep the text originally inserted after the new tag.
       var after_text = element.textContent.substr(startOffset + str.length);
 
@@ -203,7 +205,7 @@ CKEDITOR_mentions.prototype.timeout_callback = function (args) {
 
       // Create link
       var link = document.createElement('a');
-      link.href = Drupal.settings.basePath + 'user/' + $(this).data('uid');
+      link.href = Backdrop.settings.basePath + 'user/' + $(this).data('uid');
       link.textContent = '@' + $(this).data('realname');
 
       // Insert link after text node
@@ -257,11 +259,65 @@ CKEDITOR_mentions.prototype.break_on = function (charcode) {
   return false;
 };
 
+/*
+ * Returns the coordinates of the cursor when.
+ *
+ * Borrowed from https://ckeditor.com/old//comment/42822#comment-42822.
+ */
+function getCoords(editor) {
+  var dummyElement = editor.document.createElement( 'img',
+  {
+     attributes :
+     {
+        src : 'null',
+        width : 0,
+        height : 0
+     }
+  });
+
+  editor.insertElement( dummyElement );
+
+  var x = 0;
+  var y  = 0;
+
+  var obj = dummyElement.$;
+
+  // Get offSetPos from IFrame-->Up
+  var el  = parent.frames[0].frameElement;
+  while (el){
+     x += el.offsetLeft;
+     y += el.offsetTop;
+     el = el.offsetParent;
+  }
+
+  // Get offSetPos from IFrame-->Down[/b]
+  while (obj.offsetParent){
+     x += obj.offsetLeft;
+     y  += obj.offsetTop;
+     obj    = obj.offsetParent;
+  }
+
+  // Account for left/right scrolling
+  var scrollTop = editor.document.$.documentElement.scrollTop;
+  var scrollLeft = editor.document.$.documentElement.scrollLeft;
+
+  x += obj.offsetLeft-scrollLeft;
+  y  += obj.offsetTop-scrollTop ;
+
+  var coords = [];
+  coords['x'] = x;
+  coords['y'] = y;
+
+  dummyElement.remove();
+
+  return coords;
+}
+
 ///////////////////////////////////////////////////////////////
 //      Plugin implementation
 ///////////////////////////////////////////////////////////////
 (function($){
-  CKEDITOR.plugins.add('mentions', {
+  CKEDITOR.plugins.add('ckeditormentions', {
     icons: '',
     init: function(editor) {
       var mentions = CKEDITOR_mentions.get_instance(editor);

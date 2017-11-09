@@ -6,11 +6,14 @@
  */
 
 /**
- * Implements hook_preprocess_html()
+ * Implements hook_preprocess_page()
  */
-function ckeditor_mentions_preprocess_html() {
+function ckeditor_mentions_preprocess_page(&$variables) {
   // We need to include our misc/ajax.js, else we can't be sure if it's included when we need it.
-  drupal_add_library('system', 'drupal.ajax');
+  backdrop_add_library('system', 'backdrop.ajax');
+  $path = backdrop_get_path('module', 'ckeditor_mentions');
+  backdrop_add_css($path . '/ckeditor_mentions.css');
+
 }
 
 /**
@@ -22,21 +25,27 @@ function ckeditor_mentions_menu() {
     'page callback' => 'ckeditor_mentions_getpeople',
     'access arguments' => array('access user profiles'),
     'type' => MENU_CALLBACK,
-    'delivery callback' => 'drupal_json_output',
+    'delivery callback' => 'backdrop_json_output',
     'file' => 'includes/ckeditor_mentions.ajax.inc',
   );
   return $items;
 }
 
 /**
- * Implementation of hook_ckeditor_plugin().
+ * Implements hook_ckeditor_plugin().
  */
-function ckeditor_mentions_ckeditor_plugin() {
-  return array('ckeditor_mentions' => array(
-    'name' => 'mentions',
-    'desc' => t('Plugin for user mentioning and inserting'),
-    'path' => drupal_get_path('module', 'ckeditor_mentions') . '/plugins/mentions/',
-  ));
+function ckeditor_mentions_ckeditor_plugins() {
+  $image_prefix = backdrop_get_path('module', 'ckeditor') . '/images/buttons/';
+  return array('ckeditormentions' => array(
+    //'name' => 'mentions',
+    'file' => 'plugin.js',
+    'path' => backdrop_get_path('module', 'ckeditor_mentions') . '/plugins/mentions/',
+    'enabled callback' => 'ckeditor_mentions_plugin_check',
+    ));
+}
+
+function ckeditor_mentions_plugin_check($format, $plugin_name) {
+      return TRUE;
 }
 
 /**
@@ -45,6 +54,6 @@ function ckeditor_mentions_ckeditor_plugin() {
 function ckeditor_mentions_views_api() {
   return array(
     'api' => '3.0',
-    'path' => drupal_get_path('module', 'ckeditor_mentions') . '/includes',
+    'path' => backdrop_get_path('module', 'ckeditor_mentions') . '/includes',
   );
 }
