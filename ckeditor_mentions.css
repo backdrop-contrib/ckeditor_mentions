@@ -1,4 +1,17 @@
 .mention-suggestions {
   position: absolute;
-  background-color: #000;
+  background-color: #fff;
+  border: 1px solid #eee;
+}
+.mention-suggestions .item-list ul {
+  margin: 0px;
+}
+.mention-suggestions .item-list ul li {
+  list-style-type: none;
+  margin: 0px;
+  padding: 3px;
+  border-bottom: 1px solid #eee;
+}
+.mention-suggestions li:hover {
+  background-color: #eee;
 }

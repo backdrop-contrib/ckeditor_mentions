@@ -35,8 +35,13 @@
                 },
                 "style_plugin": "list",
                 "style_options": {
-                    "default_row_class": false,
-                    "row_class_special": false
+                    "grouping": [],
+                    "row_class": "",
+                    "default_row_class": 0,
+                    "row_class_special": 1,
+                    "type": "ul",
+                    "wrapper_class": "item-list",
+                    "class": ""
                 },
                 "row_plugin": "fields",
                 "row_options": {
@@ -78,15 +83,43 @@
                             "operator": false
                         }
                     },
-                    "realname": {
-                        "id": "realname",
-                        "table": "realname",
-                        "field": "realname",
+                    "name": {
+                        "id": "name",
+                        "table": "users",
+                        "field": "name",
+                        "relationship": "none",
+                        "group_type": "group",
+                        "ui_name": "",
                         "operator": "starts",
+                        "value": "",
+                        "group": "1",
+                        "exposed": false,
                         "expose": {
-                            "operator_id": "realname_op",
-                            "operator": "realname_op",
-                            "identifier": "realname"
+                            "operator_id": false,
+                            "label": "",
+                            "description": "",
+                            "use_operator": false,
+                            "operator": "",
+                            "identifier": "",
+                            "required": false,
+                            "remember": false,
+                            "multiple": false,
+                            "remember_roles": {
+                                "authenticated": "authenticated"
+                            }
+                        },
+                        "is_grouped": false,
+                        "group_info": {
+                            "label": "",
+                            "description": "",
+                            "identifier": "",
+                            "optional": true,
+                            "widget": "select",
+                            "multiple": false,
+                            "remember": 0,
+                            "default_group": "All",
+                            "default_group_multiple": [],
+                            "group_items": []
                         }
                     }
                 }

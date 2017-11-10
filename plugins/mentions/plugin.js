@@ -186,7 +186,6 @@ CKEDITOR_mentions.prototype.timeout_callback = function (args) {
     $('.mention-users').click(function(e) {
       e.preventDefault();
 
-      selection     = editor.getSelection();
       range         = selection.getRanges()[0];
       startOffset   = parseInt(range.startOffset - str.length) || 0;
       element       = range.startContainer.$;
