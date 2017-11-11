@@ -193,7 +193,6 @@ CKEDITOR_mentions.prototype.timeout_callback = function (args) {
 
       mentions.stop_observing();
 
-      console.log($(this));
       // Keep the text originally inserted after the new tag.
       var after_text = element.textContent.substr(startOffset + str.length);
 
@@ -202,20 +201,25 @@ CKEDITOR_mentions.prototype.timeout_callback = function (args) {
 
       window.startOffset = startOffset;
 
-      // Create link
-      var link = document.createElement('a');
-      link.href = Backdrop.settings.basePath + 'user/' + $(this).data('uid');
-      link.textContent = '@' + $(this).data('realname');
+      // Create new node.
+      if (Backdrop.settings.MentionsCreateLinks) {
+        var newNode = document.createElement('a');
+        newNode.href = Backdrop.settings.basePath + 'user/' + $(this).data('uid');
+        newNode.textContent = '@' + $(this).data('realname');
+      }
+      else {
+        var newNode = document.createTextNode('@' + $(this).data('realname'));
+      }
 
-      // Insert link after text node
-      // this is used when the link is inserted not at the end of the text
+      // Insert newNode after text node
+      // this is used when the newNode is inserted not at the end of the text
       if ( element.nextSibling ) {
-        element.parentNode.insertBefore(link, element.nextSibling);
+        element.parentNode.insertBefore(newNode, element.nextSibling);
       }
 
       // at the end of the editor text
       else {
-        element.parentNode.appendChild(link);
+        element.parentNode.appendChild(newNode);
       }
 
       // Add the text which was present after the tag.
@@ -226,8 +230,8 @@ CKEDITOR_mentions.prototype.timeout_callback = function (args) {
       $('.mention-suggestions').remove();
       selection = editor.getSelection();
       range = selection.getRanges()[0];
-      var el = new CKEDITOR.dom.element(link.parentNode);
-      range.moveToElementEditablePosition(el, link.parentNode.textContent.length);
+      var el = new CKEDITOR.dom.element(newNode.parentNode);
+      range.moveToElementEditablePosition(el, newNode.parentNode.textContent.length);
       editor.focus();
       range.select();
     });

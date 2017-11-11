@@ -9,11 +9,11 @@
  * Implements hook_preprocess_page()
  */
 function ckeditor_mentions_preprocess_page(&$variables) {
-  // We need to include our misc/ajax.js, else we can't be sure if it's included when we need it.
   backdrop_add_library('system', 'backdrop.ajax');
   $path = backdrop_get_path('module', 'ckeditor_mentions');
   backdrop_add_css($path . '/ckeditor_mentions.css');
-
+  $create_links = config_get('ckeditor_mentions.settings', 'create_links');
+  backdrop_add_js(array('MentionsCreateLinks' => $create_links), 'setting');
 }
 
 /**
@@ -28,6 +28,24 @@ function ckeditor_mentions_menu() {
     'delivery callback' => 'backdrop_json_output',
     'file' => 'includes/ckeditor_mentions.ajax.inc',
   );
+  if (module_exists('mentions')) {
+    $items['admin/config/content/mentions/ckeditor-mentions'] = array(
+      'title' => 'CKEditor mentions settings',
+      'page callback' => 'backdrop_get_form',
+      'page arguments' => array('ckeditor_mentions_form'),
+      'access arguments' => array('administer site configuration'),
+      'type' => MENU_NORMAL_ITEM,
+    );
+  }
+  else {
+    $items['admin/config/content/ckeditor-mentions'] = array(
+      'title' => 'Mentions',
+      'page callback' => 'backdrop_get_form',
+      'page arguments' => array('ckeditor_mentions_form'),
+      'access arguments' => array('administer site configuration'),
+      'type' => MENU_NORMAL_ITEM,
+    );
+  }
   return $items;
 }
 
@@ -37,7 +55,6 @@ function ckeditor_mentions_menu() {
 function ckeditor_mentions_ckeditor_plugins() {
   $image_prefix = backdrop_get_path('module', 'ckeditor') . '/images/buttons/';
   return array('ckeditormentions' => array(
-    //'name' => 'mentions',
     'file' => 'plugin.js',
     'path' => backdrop_get_path('module', 'ckeditor_mentions') . '/plugins/mentions/',
     'enabled callback' => 'ckeditor_mentions_plugin_check',
@@ -45,7 +62,7 @@ function ckeditor_mentions_ckeditor_plugins() {
 }
 
 function ckeditor_mentions_plugin_check($format, $plugin_name) {
-      return TRUE;
+  return TRUE;
 }
 
 /**
@@ -57,3 +74,31 @@ function ckeditor_mentions_views_api() {
     'path' => backdrop_get_path('module', 'ckeditor_mentions') . '/includes',
   );
 }
+
+/**
+ * Page callback for mentions.
+ */
+function ckeditor_mentions_form($form, $form_state) {
+  $create_links = config_get('ckeditor_mentions.settings', 'create_links');
+
+  $form['#config'] = 'mentions.settings';
+  $form['create_links'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Create links in editor'),
+    '#description' => t('If checked, @mentions will be converted by Javascript to links within the Editor, otherwise they will be saved as @USERNAME without a link.'),
+    '#default_value' => $create_links,
+  );
+
+  return system_settings_form($form);
+}
+
+/**
+ * Implements hook_config_info().
+ */
+function ckeditor_mentions_config_info() {
+  $prefixes['ckeditor_mentions.settings'] = array(
+    'label' => t('CKEditor mentions settings'),
+    'group' => t('Configuration'),
+  );
+}
+
